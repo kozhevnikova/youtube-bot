@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -39,11 +38,18 @@ func main() {
 			}
 
 		case "":
-			id := strings.TrimPrefix(
-				update.Message.Text, "https://www.youtube.com/watch?v=")
-			fmt.Println(id)
-
-			_, err := bot.Send(
+			id, err := getID(update, update.Message.Text)
+			if err != nil || id == "" {
+				fmt.Fprintln(os.Stderr, "ERROR > link is incorrect >", err)
+				_, err := bot.Send(
+					tgbotapi.NewMessage(chat,
+						"Link is incorrect. Please, check."))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "ERROR >", err)
+				}
+				break
+			}
+			_, err = bot.Send(
 				tgbotapi.NewMessage(chat,
 					"Your request has been received. It can take a minute to process."))
 			if err != nil {
